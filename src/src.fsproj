@@ -127,6 +127,7 @@
   <Import Project="$(FSharpTargetsPath)" />
   <Import Project="$(MSBuildExtensionsPath)\MonoGame\v3.0\MonoGame.Content.Builder.targets" />
   <ItemGroup>
+    <Compile Include="Noise.fs" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="NPC.fs" />
     <Compile Include="Terrain.fs" />
@@ -162,13 +163,6 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Noise\Noise.csproj">
-      <Name>Noise</Name>
-      <Project>{c4d6b146-52c9-4758-9be3-a36b3a6ecdb8}</Project>
-      <Private>True</Private>
-    </ProjectReference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

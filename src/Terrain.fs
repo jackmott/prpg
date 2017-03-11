@@ -6,13 +6,15 @@ open System.Collections.Generic
 open System
 open System.Diagnostics
 open NPC
+open Noise
 
 let TileSize = 128
 
 type TerrainTile =
-    | Grass 
-    | Dirt 
-    | Water
+    | Water 
+    | Grass
+    | Mountain
+    | Snow
 
 type World =
     {
@@ -36,8 +38,10 @@ let GetTexture graphics tile =
         | Grass ->         
             tex.SetData(GenGrid 10 TileSize Color.Green)          
                   
-        | Dirt ->        
-            tex.SetData(GenGrid 10 TileSize Color.LightYellow)                
+        | Mountain ->        
+            tex.SetData(GenGrid 10 TileSize Color.Gray)                
+        | Snow -> 
+             tex.SetData(GenGrid 10 TileSize Color.White)                
         | Water ->        
             tex.SetData(GenGrid 10 TileSize Color.Blue)             
         TileTextureDict.Add(tile,tex)
@@ -45,22 +49,22 @@ let GetTexture graphics tile =
 
 let GenWorld graphics w h =
     let r = Random(1)
-     //If the precalc stuff isn't set right, set it            
-    let noise = FastNoise(r.Next(0, 100000))
-    noise.SetNoiseType(FastNoise.NoiseType.Simplex)
+     //If the precalc stuff isn't set right, set it                    
             
     let tiles = 
         [|
         for y in 0 .. h do
             for x in 0 .. w do
-               let f = noise.GetNoise(1000.1f*float32(x)/float32(w),1000.01f*float32(y)/float32(h))               
+               let f = SimplexNoise 1024 (0.1f*float32(x)) (0.1f*float32(y))                            
                yield 
-                   if f < -0.25f then
+                   if f < -0.15f then
                         Water
-                   else if f < 0.25f then
-                        Dirt
-                   else
+                   else if f < 0.15f then
                         Grass
+                   else if f < 0.45f then
+                        Mountain
+                   else 
+                        Snow
                               
         |]
     let npcs = 

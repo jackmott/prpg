@@ -15,21 +15,22 @@ type GameState =
 
 type PRPGame () as G =
     inherit Game()
-        
+    
+    let R = Random()    
     let dialogueDist = 1.0f
     do G.Content.RootDirectory <- "Content"
     let graphicsDeviceManager = new GraphicsDeviceManager(G)    
     let mutable spriteBatch = Unchecked.defaultof<SpriteBatch>
-    let player : PlayerType = { pos = Vector2(50.0f,50.0f);tex=null}
-    let mutable worldPos = Vector2(50.0f,50.0f)
+    let player = PlayerType.Empty
+    let mutable worldPos = Vector2(500.0f,500.0f)
     let mutable world = { w = 0; h = 0; tiles=null; npcs = null}
     let GameState = Roam
     let mutable font = null
 
     override G.Initialize() =
         do spriteBatch <- new SpriteBatch(G.GraphicsDevice)
-        InitPlayer player G.GraphicsDevice
-        world <- GenWorld G.GraphicsDevice 100 100
+        InitPlayer player G.GraphicsDevice (Vector2(500.0f,500.0f))
+        world <- GenWorld G.GraphicsDevice 1000 1000
         graphicsDeviceManager.PreferredBackBufferHeight <- 1080
         graphicsDeviceManager.PreferredBackBufferWidth <- 1920
         graphicsDeviceManager.ApplyChanges()
@@ -48,10 +49,17 @@ type PRPGame () as G =
     override G.Update (gameTime) =
 
         let gamePadCap = GamePad.GetCapabilities(PlayerIndex.One)
-        let dist = 0.1f
+        let tile = GetTile world (int(player.pos.X)) (int(player.pos.Y))
+         
+        let dist = 
+            if tile = Water then
+                0.01f            
+            else 
+                0.1f
+
         let threshold = 1.5f
 
-
+        
         if gamePadCap.IsConnected then
             let padState = GamePad.GetState(PlayerIndex.One)
             if  gamePadCap.HasLeftXThumbStick then
@@ -59,6 +67,7 @@ type PRPGame () as G =
             if gamePadCap.HasLeftYThumbStick then
                 player.pos.Y <- player.pos.Y -  padState.ThumbSticks.Left.Y * dist
          
+
         let state = Keyboard.GetState()
 
         
@@ -74,8 +83,9 @@ type PRPGame () as G =
         if state.IsKeyDown(Keys.Down) then
             player.pos.Y <- player.pos.Y + dist
          
-
+       
         let xdiff = worldPos.X - player.pos.X
+        
         if xdiff > threshold then            
             worldPos.X <- worldPos.X - dist
         else if xdiff < -threshold then
@@ -120,8 +130,12 @@ type PRPGame () as G =
         
         let maxDist =float32( Math.Sqrt(numTilesX*numTilesX+numTilesY*numTilesY))
         for n in world.npcs do            
+            let dir1 = float32((R.NextDouble() - 0.5)*0.1)
+            let dir2 = float32((R.NextDouble() - 0.5)*0.1)
+            n.pos.X <- n.pos.X + dir1
+            n.pos.Y <- n.pos.Y + dir2
             if Vector2.Distance(n.pos,worldPos) <= maxDist then
-                spriteBatch.Draw(n.tex,n.pos*float32(TileSize) - Offset,Color.White)              
+                n.Draw spriteBatch (float32(TileSize)) Offset
             if Vector2.Distance(player.pos,n.pos) <= dialogueDist then
                 spriteBatch.DrawString(font,"Hello!",n.pos*float32(TileSize) - Offset,Color.White)
                 
