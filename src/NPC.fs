@@ -24,7 +24,8 @@ type NPCType =
         items : Item[]
         wants : Want []
         money : int 
-    }
+    }    
+        
 
 let mutable private npcTex : Texture2D Option = None
 

@@ -22,8 +22,6 @@ type World =
         npcs : NPCType[]
     }
 
-
-
 let GenGrid width size color = 
     Array.init (size * size) (fun _ -> color)
            
@@ -47,31 +45,33 @@ let GetTexture graphics tile =
 
 let GenWorld graphics w h =
     let r = Random(1)
+     //If the precalc stuff isn't set right, set it            
+    let noise = FastNoise(r.Next(0, 100000))
+    noise.SetNoiseType(FastNoise.NoiseType.Simplex)
+            
     let tiles = 
         [|
         for y in 0 .. h do
             for x in 0 .. w do
-               yield
-                    match r.Next(0,3) with            
-                    | 0 -> Grass
-                    | 1 -> Water
-                    | 2 -> Dirt
-                    | _ -> Debug.Assert(false)
-                           Water
+               let f = noise.GetNoise(1000.1f*float32(x)/float32(w),1000.01f*float32(y)/float32(h))               
+               yield 
+                   if f < -0.25f then
+                        Water
+                   else if f < 0.25f then
+                        Dirt
+                   else
+                        Grass
+                              
         |]
     let npcs = 
-        [|
-            for i in 0 .. 1000 do
-                yield 
-                    {
-                        pos = new Vector2(float32(r.NextDouble()*float(w)),float32(r.NextDouble()*float(h)))
-                        name = "Fred"
-                        tex = GetNPCTex graphics     
-                        items = null
-                        wants = null   
-                        money = 100
-                    }
-        |]
+        Array.init 1000 (fun i -> {
+                                    pos = new Vector2(float32(r.NextDouble()*float(w)),float32(r.NextDouble()*float(h)))
+                                    name = "Fred"
+                                    tex = GetNPCTex graphics     
+                                    items = null
+                                    wants = null   
+                                    money = 100
+                                   } )        
     {
         w = w
         h = h

@@ -8,22 +8,31 @@ open Player
 open NPC
 open System
 
+type GameState =
+    | Roam
+    | Dialogue
+    | Trade
+
 type PRPGame () as G =
     inherit Game()
- 
-    
-
+        
+    let dialogueDist = 1.0f
     do G.Content.RootDirectory <- "Content"
     let graphicsDeviceManager = new GraphicsDeviceManager(G)    
     let mutable spriteBatch = Unchecked.defaultof<SpriteBatch>
     let player : PlayerType = { pos = Vector2(50.0f,50.0f);tex=null}
     let mutable worldPos = Vector2(50.0f,50.0f)
     let mutable world = { w = 0; h = 0; tiles=null; npcs = null}
+    let GameState = Roam
+    let mutable font = null
 
     override G.Initialize() =
         do spriteBatch <- new SpriteBatch(G.GraphicsDevice)
         InitPlayer player G.GraphicsDevice
         world <- GenWorld G.GraphicsDevice 100 100
+        graphicsDeviceManager.PreferredBackBufferHeight <- 1080
+        graphicsDeviceManager.PreferredBackBufferWidth <- 1920
+        graphicsDeviceManager.ApplyChanges()
         do base.Initialize()
          
          // TODO: Add your initialization logic here
@@ -31,7 +40,7 @@ type PRPGame () as G =
         ()
 
     override G.LoadContent() =
-        
+        font <- G.Content.Load<SpriteFont>("ConsoleFont")
          // TODO: use this.Content to load your game content here   
         
         ()
@@ -108,10 +117,14 @@ type PRPGame () as G =
                 let tex = GetTexture G.GraphicsDevice tile                
                 let screenPos = (new Vector2(float32(x),float32(y))*float32(TileSize) - Offset) 
                 spriteBatch.Draw(tex,screenPos,Color.White)              
+        
+        let maxDist =float32( Math.Sqrt(numTilesX*numTilesX+numTilesY*numTilesY))
+        for n in world.npcs do            
+            if Vector2.Distance(n.pos,worldPos) <= maxDist then
+                spriteBatch.Draw(n.tex,n.pos*float32(TileSize) - Offset,Color.White)              
+            if Vector2.Distance(player.pos,n.pos) <= dialogueDist then
+                spriteBatch.DrawString(font,"Hello!",n.pos*float32(TileSize) - Offset,Color.White)
                 
-        for n in world.npcs do
-            spriteBatch.Draw(n.tex,n.pos*float32(TileSize) - Offset,Color.White)              
-
         
         spriteBatch.Draw(player.tex,player.pos*float32(TileSize) - Offset,Color.White)
 
