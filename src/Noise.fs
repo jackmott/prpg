@@ -44,18 +44,18 @@ let SimplexNoise (seed: int) (x:float32) (y:float32) =
     let x0 = x - X0
     let y0 = y - Y0
 
-    let (i1,j1) = 
-        if x0 > y0 then
-            1,0
-        else
-            0,1
+    let mutable i1 = 0
+    let mutable j1 = 1    
+    if x0 > y0 then
+        i1 <- 1
+        j1 <- 0
         
     let x1 = x0 - float32(i1) + G2
     let y1 = y0 - float32(j1) + G2
     let x2 = x0 - 1.0f + 2.0f * G2
     let y2 = y0 - 1.0f + 2.0f * G2
 
-    t <- 0.5f - x0 * x0 - y0*y0
+    t <- 0.5f - x0*x0 - y0*y0
     let n0 = 
         if t < 0.0f then 0.0f
         else
